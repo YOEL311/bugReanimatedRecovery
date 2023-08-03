@@ -1,5 +1,4 @@
 module.exports = {
-  
   presets: [
     'module:metro-react-native-babel-preset',
     '@babel/preset-typescript',
@@ -10,6 +9,7 @@ module.exports = {
       {
         runtime: 'automatic',
       },
-    ]
-  ]
+    ],
+    'react-native-reanimated/plugin',
+  ],
 };

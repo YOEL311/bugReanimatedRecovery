@@ -8,23 +8,19 @@
 import React from 'react';
 import type {PropsWithChildren} from 'react';
 import {
+  Button,
+  FlatList,
   SafeAreaView,
-  ScrollView,
+  SectionList,
   StatusBar,
   StyleSheet,
   Text,
   useColorScheme,
   View,
 } from 'react-native';
-import Animated, {SlideInDown} from 'react-native-reanimated';
+import Animated, {useAnimatedRef} from 'react-native-reanimated';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+import {Colors, Header} from 'react-native/Libraries/NewAppScreen';
 
 type SectionProps = PropsWithChildren<{
   title: string;
@@ -63,38 +59,61 @@ function App(): JSX.Element {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
+  const flatListRef = useAnimatedRef<Animated.FlatList<string>>();
+
+  const AnimatedSectionList = Animated.createAnimatedComponent(
+    SectionList<string>,
+  );
+
+  const sectionListRef = useAnimatedRef<typeof AnimatedSectionList>();
+
+  const data = ['Step One', 'Step Two', 'Step Three', 'Step Four', 'Step Five'];
+
   return (
-    <SafeAreaView style={backgroundStyle}>
+    <SafeAreaView style={styles.safeArea}>
       <StatusBar
         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
         backgroundColor={backgroundStyle.backgroundColor}
       />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <Animated.View entering={SlideInDown.duration(200)}>
-          <View
-            style={{
-              backgroundColor: isDarkMode ? Colors.black : Colors.white,
-            }}>
-            <Section title="Step One">
-              Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-              screen and then come back to see your edits.
+      <Header />
+      <View
+        style={{
+          backgroundColor: isDarkMode ? Colors.black : Colors.white,
+        }}
+      />
+
+      <Button
+        title="pressMe"
+        onPress={() => {
+          flatListRef.current?.scrollToIndex({
+            index: Math.random() * (data.length - 1),
+          });
+        }}
+      />
+
+      <FlatList
+        ref={flatListRef}
+        renderItem={({item}) => {
+          return (
+            <Section title="Section List">
+              Read the docs to discover what to do next: {item}
             </Section>
-            <Section title="See Your Changes">
-              <ReloadInstructions />
+          );
+        }}
+        data={data}
+      />
+
+      <AnimatedSectionList
+        renderItem={({item}) => {
+          return (
+            <Section title="FlatLIst">
+              Read the docs to discover what to do next: {item}
             </Section>
-            <Section title="Debug">
-              <DebugInstructions />
-            </Section>
-            <Section title="Learn More">
-              Read the docs to discover what to do next:
-            </Section>
-            <LearnMoreLinks />
-          </View>
-        </Animated.View>
-      </ScrollView>
+          );
+        }}
+        ref={sectionListRef}
+        sections={[{data}]}
+      />
     </SafeAreaView>
   );
 }
@@ -115,6 +134,9 @@ const styles = StyleSheet.create({
   },
   highlight: {
     fontWeight: '700',
+  },
+  safeArea: {
+    flex: 1,
   },
 });
 
