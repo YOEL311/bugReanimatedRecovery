@@ -9,8 +9,9 @@ import React from 'react';
 import type {PropsWithChildren} from 'react';
 import {
   Button,
-  FlatList,
+  DefaultSectionT,
   SafeAreaView,
+  ScrollView,
   SectionList,
   StatusBar,
   StyleSheet,
@@ -18,7 +19,11 @@ import {
   useColorScheme,
   View,
 } from 'react-native';
-import Animated, {useAnimatedRef} from 'react-native-reanimated';
+import Animated, {
+  runOnUI,
+  scrollTo,
+  useAnimatedRef,
+} from 'react-native-reanimated';
 
 import {Colors, Header} from 'react-native/Libraries/NewAppScreen';
 
@@ -61,13 +66,24 @@ function App(): JSX.Element {
 
   const flatListRef = useAnimatedRef<Animated.FlatList<string>>();
 
+  const sectionListRef = useAnimatedRef<SectionList<string>>();
+
+  const scrollRef = useAnimatedRef<ScrollView>();
+
   const AnimatedSectionList = Animated.createAnimatedComponent(
     SectionList<string>,
   );
 
-  const sectionListRef = useAnimatedRef<typeof AnimatedSectionList>();
-
   const data = ['Step One', 'Step Two', 'Step Three', 'Step Four', 'Step Five'];
+
+  const animationScrollTo = (
+    ref:
+      | React.RefObject<Animated.FlatList<string>>
+      | React.RefObject<SectionList<string, DefaultSectionT>>,
+  ) => {
+    'worklet';
+    scrollTo(ref, 0, Math.random() * 300, true);
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -85,13 +101,12 @@ function App(): JSX.Element {
       <Button
         title="pressMe"
         onPress={() => {
-          flatListRef.current?.scrollToIndex({
-            index: Math.random() * (data.length - 1),
-          });
+          runOnUI(animationScrollTo)(sectionListRef);
+          runOnUI(animationScrollTo)(flatListRef);
         }}
       />
 
-      <FlatList
+      <Animated.FlatList
         ref={flatListRef}
         renderItem={({item}) => {
           return (
