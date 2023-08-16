@@ -11,8 +11,8 @@ import {
   Button,
   DefaultSectionT,
   SafeAreaView,
-  ScrollView,
   SectionList,
+  SectionListProps,
   StatusBar,
   StyleSheet,
   Text,
@@ -20,9 +20,14 @@ import {
   View,
 } from 'react-native';
 import Animated, {
+  AnimatedRef,
+  AnimateProps,
+  interpolateColor,
   runOnUI,
   scrollTo,
   useAnimatedRef,
+  useAnimatedStyle,
+  useSharedValue,
 } from 'react-native-reanimated';
 
 import {Colors, Header} from 'react-native/Libraries/NewAppScreen';
@@ -64,26 +69,61 @@ function App(): JSX.Element {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
-  const flatListRef = useAnimatedRef<Animated.FlatList<string>>();
-
-  const sectionListRef = useAnimatedRef<SectionList<string>>();
-
-  const scrollRef = useAnimatedRef<ScrollView>();
-
   const AnimatedSectionList = Animated.createAnimatedComponent(
     SectionList<string>,
   );
+  const flatListRef = useAnimatedRef<Animated.FlatList<string>>();
+
+  const animatedSectionListRef =
+    useAnimatedRef<InstanceType<typeof AnimatedSectionList>>();
 
   const data = ['Step One', 'Step Two', 'Step Three', 'Step Four', 'Step Five'];
 
-  const animationScrollTo = (
-    ref:
-      | React.RefObject<Animated.FlatList<string>>
-      | React.RefObject<SectionList<string, DefaultSectionT>>,
+  scrollTo(animatedSectionListRef, 0, Math.random() * 300, true);
+
+  scrollTo(flatListRef, 0, Math.random() * 300, true);
+
+  const animationScrollToFlat = (
+    ref: AnimatedRef<Animated.FlatList<string>>,
   ) => {
     'worklet';
     scrollTo(ref, 0, Math.random() * 300, true);
   };
+
+  const animationScrollToSection = (
+    ref: AnimatedRef<
+      React.Component<
+        AnimateProps<SectionListProps<string, DefaultSectionT>>,
+        unknown,
+        unknown
+      >
+    >,
+  ) => {
+    'worklet';
+    scrollTo(ref, 0, Math.random() * 300, true);
+  };
+  const sharedAnimation = useSharedValue(1);
+
+  const foo = () => {
+    return true;
+  };
+
+  const bar = () => {
+    'worklet';
+    foo();
+  };
+
+  useSharedValue(() => {});
+
+  const backgroundColorAnimStyle = useAnimatedStyle(() => {
+    return {
+      backgroundColor: interpolateColor(
+        sharedAnimation.value,
+        [0, 1],
+        ['#00001', '#12345'],
+      ),
+    };
+  }, []);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -92,17 +132,13 @@ function App(): JSX.Element {
         backgroundColor={backgroundStyle.backgroundColor}
       />
       <Header />
-      <View
-        style={{
-          backgroundColor: isDarkMode ? Colors.black : Colors.white,
-        }}
-      />
+      <Animated.View style={backgroundColorAnimStyle} />
 
       <Button
         title="pressMe"
         onPress={() => {
-          runOnUI(animationScrollTo)(sectionListRef);
-          runOnUI(animationScrollTo)(flatListRef);
+          runOnUI(animationScrollToSection)(animatedSectionListRef);
+          runOnUI(animationScrollToFlat)(flatListRef);
         }}
       />
 
@@ -126,7 +162,7 @@ function App(): JSX.Element {
             </Section>
           );
         }}
-        ref={sectionListRef}
+        ref={animatedSectionListRef}
         sections={[{data}]}
       />
     </SafeAreaView>
