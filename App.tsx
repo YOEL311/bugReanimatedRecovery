@@ -22,13 +22,13 @@ import {
 import Animated, {
   AnimatedRef,
   AnimateProps,
-  interpolateColor,
   runOnUI,
   scrollTo,
   useAnimatedRef,
   useAnimatedStyle,
   useSharedValue,
 } from 'react-native-reanimated';
+import {mixColor} from 'react-native-redash';
 
 import {Colors, Header} from 'react-native/Libraries/NewAppScreen';
 
@@ -104,24 +104,11 @@ function App(): JSX.Element {
   };
   const sharedAnimation = useSharedValue(1);
 
-  const foo = () => {
-    return true;
-  };
-
-  const bar = () => {
-    'worklet';
-    foo();
-  };
-
   useSharedValue(() => {});
 
   const backgroundColorAnimStyle = useAnimatedStyle(() => {
     return {
-      backgroundColor: interpolateColor(
-        sharedAnimation.value,
-        [0, 1],
-        ['#00001', '#12345'],
-      ),
+      backgroundColor: mixColor(sharedAnimation.value, '#00001', '#12345'),
     };
   }, []);
 
